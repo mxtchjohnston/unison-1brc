@@ -1,0 +1,45 @@
+quit
+push
+push.create mxtchjohnston.public.brc .brc
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+add
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+run brc.main
+update
+add
+run brc.main
+update
+run brc.main
+add
+api
+ui
+lib.install @oco-adam/csv
+ui
+project.create brc
+project.create 1brc

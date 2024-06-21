@@ -1,0 +1,45 @@
+
+brc.main : '{IO, Exception} ()
+brc.main = do
+  contents = 
+    (brc.readFile "Weather Stations.csv") 
+      |> lib.base.Text.split ?\n 
+      |> List.map (lib.base.Text.split ?; >> brc.listToTuple)
+      |> lib.base.data.Map.fromListWith (++)
+      |> Map.map brc.calculate
+      |> Map.toList
+      |> List.map brc.toText
+      |> Text.join "\n"
+  printLine (contents)
+
+brc.toText : (Text, (Float, Float, Float)) -> Text
+brc.toText t = 
+  match t with  
+    (name, (min, mean, max)) -> lib.base.Text.join "" [name, "=", (Float.toText min),"/", (Float.toText mean),"/", (Float.toText max), ", "]
+
+brc.mean : [Float] -> Float
+brc.mean list = 
+  numerator = Float.sum list
+  denominator = Float.fromNat (List.size list)
+  numerator / denominator
+
+brc.calculate : [Float] -> (Float, Float, Float)
+brc.calculate temperature = 
+  min = List.minimum temperature |> getOrBug "Could not find minimum"
+  mean = brc.mean temperature
+  max = List.maximum temperature |> getOrBug "Could not find maximum"
+  (min, mean, max)
+  
+
+brc.listToTuple : [Text] -> (Text, [Float])
+brc.listToTuple = 
+  cases 
+    [] -> (bug "Empty list")
+    [x] -> (bug "List with only one element")
+    [x, y] -> Tuple.pair x [(Float.fromText(y) |> getOrBug "Could not convert to float")]
+    _ -> bug "List with more than two elements"
+
+ 
+
+brc.readFile : Text -> {IO, Exception} Text
+brc.readFile = readFileUtf8 << FilePath
