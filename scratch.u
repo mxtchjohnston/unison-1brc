@@ -1,0 +1,23 @@
+experiment: '{IO, Exception} ()
+experiment = do
+  semicolon = ?;
+  newline = ?\n
+  file = readFileUtf8 <| FilePath "Weather Stations.csv" |> Text.split newline
+  
+  ()
+
+
+structural type Measurement = {
+  min: Float,
+  max: Float,
+  mean: Float
+}
+
+updateMeasurement : Measurement -> Float -> Measurement
+updateMeasurement measurement value =
+  min = if value < Measurement.min measurement then value else Measurement.min measurement
+  max = if value > Measurement.max measurement then value else Measurement.max measurement
+  mean = (Measurement.mean measurement + value) / 2.0
+  Measurement min max mean
+
+> updateMeasurement (Measurement 3.0 4.0 3.5) 10.0

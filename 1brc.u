@@ -1,6 +1,44 @@
-
 brc.main : '{IO, Exception} ()
-brc.main = do
+brc.main = runStream
+
+brc.runStream : '{IO, Exception} ()
+brc.runStream = do
+  fileHandle = open (FilePath "Weather Stations.csv") Read
+
+  loop : Map Text [Float] -> Handle -> Map Text [Float]
+  loop table _handle = 
+    match isEOF _handle with
+      true -> table
+      false ->
+        line = getLine _handle
+        list = lib.base.Text.split ?; line
+        city = (List.head list) |> getOrBug "Could not find city"
+        temperature = Float.fromText (List.at 1 list |> getOrBug "Could not find temperature") |> getOrBug "Could not convert to float"
+        value = match Map.get city table with
+          Some x -> x List.++ [temperature]
+          None -> [temperature]
+        loop (Map.insert city value table) _handle
+   
+  table = loop Map.empty fileHandle
+  printLine (Map.size table |> Nat.toText)
+  close fileHandle
+
+
+
+brc.extractCities : '{IO, Exception} ()
+brc.extractCities = do
+  contents = 
+    (brc.readFile "Weather Stations.csv") 
+      |> lib.base.Text.split ?\n
+      |> List.map (lib.base.Text.split ?; >> List.head >> getOrBug "Could not find city")
+      |> lib.base.data.List.distinct
+      |> List.sort
+      |> Text.join "\n"
+  writeFileUtf8 (FilePath "cities.txt") (contents)
+
+
+brc.run : '{IO, Exception} ()
+brc.run = do
   contents = 
     (brc.readFile "Weather Stations.csv") 
       |> lib.base.Text.split ?\n 
