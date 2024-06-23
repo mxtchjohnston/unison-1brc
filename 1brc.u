@@ -1,6 +1,35 @@
 brc.main : '{IO, Exception} ()
 brc.main = runStream
 
+{{ This will accept the text for the filepath and read one line at a time and will update the values in place }}
+brc.runInPlace : '{IO, Exception} ()
+brc.runInPlace = do
+  path = match !getArgs with
+    [] -> FilePath "Weather Stations.csv"
+    [x] -> FilePath x
+    _ -> bug "Too many arguments"
+
+  file = open path Read
+  loop : NatMap Measurement -> Handle -> NatMap Measurement
+  loop tree file =
+    match isEOF file with
+      true -> tree
+      false ->
+        line = getLine file
+        pair = lib.base.Text.split ?; line
+        city = List.head pair |> getOrBug "Could not find city"
+        id   = Abort.toBug do Text.toNat city
+        temperature = List.at 1 pair |> getOrBug "Could not find temperature" |> Float.fromText |> getOrBug "Could not convert to float"
+        value = match NatMap.get id tree with
+          Some x -> updateMeasurement x temperature
+          None -> Measurement temperature temperature temperature
+        loop (NatMap.insert id value tree) file
+  
+  tree = loop NatMap.empty file
+  printLine (NatMap.size tree |> Nat.toText)
+  ()  
+
+---
 brc.runStream : '{IO, Exception} ()
 brc.runStream = do
   fileHandle = open (FilePath "Weather Stations.csv") Read
