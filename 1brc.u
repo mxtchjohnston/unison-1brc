@@ -22,7 +22,7 @@ brc.runInPlace = do
         temperature = List.at 1 pair |> getOrBug "Could not find temperature" |> Float.fromText |> getOrBug "Could not convert to float"
         value = match NatMap.get id tree with
           Some x -> updateMeasurement x temperature
-          None -> Measurement temperature temperature temperature
+          None -> Measurement "" temperature temperature temperature
         loop (NatMap.insert id value tree) file
   
   tree = loop NatMap.empty file
